@@ -207,7 +207,7 @@ void MainWindow::addType()
 
 void MainWindow::delType()
 {
-    if (delBookKey == false)
+    if (delKey == false)
     {
         QMessageBox::information(this, tr("删除分区"), tr("请选择分区。"));
         return;
@@ -261,7 +261,7 @@ void MainWindow::delType()
 
 void MainWindow::delBook()
 {
-    if (delBookKey == false)
+    if (delKey == false)
     {
         QMessageBox::information(this, tr("删除书籍"), tr("请选择书籍。"));
         return;
@@ -322,6 +322,46 @@ void MainWindow::decreaseBookCount(QModelIndex index, QString type)
     }
 }
 
+
+void MainWindow::delUser()
+{
+    if (delKey == true)
+    {
+        QMessageBox::information(this, tr("删除用户"), tr("请选择用户。"));
+        return;
+    }
+    QModelIndexList selection  = userView->selectionModel()->selectedRows(0);
+    if(!selection.empty())
+    {
+        QModelIndex idIndex = selection.at(0);
+
+        QString name = idIndex.sibling(idIndex.row(), 1).data().toString();
+
+        QMessageBox::StandardButton button;
+        button = QMessageBox::question(this, tr("删除用户"), QString(tr("确认删除'%1'吗?").arg(name)), QMessageBox::Yes | QMessageBox::No);
+
+        if(button == QMessageBox::Yes)
+        {
+            removeUserFromDatabase(idIndex, name);
+        }
+    }
+    else  //如果没有选择，则提示用户进行选择
+    {
+        QMessageBox::information(this, tr("删除用户"), tr("请选择用户。"));
+    }
+}
+
+void MainWindow::removeUserFromDatabase(QModelIndex index, QString name)
+{
+    userModel->removeRow(index.row());
+    userModel->select();
+
+    QDateTime time = QDateTime::currentDateTime();
+    QString msg = time.toString("yyyy-MM-dd hh:mm:ss dddd");
+    operEdit->append(msg);
+    operEdit->append(tr("删除用户：%1").arg(name));
+}
+
 //以上为删除操作
 
 void MainWindow::queryChanged(const QString &text)
@@ -335,7 +375,7 @@ void MainWindow::queryChanged(const QString &text)
         profileEdit->clear();
         queryTarget = "BOOK";
 
-        delBookKey = true;
+        delKey = true;
     }
     else if (text == "用户")
     {
@@ -346,7 +386,7 @@ void MainWindow::queryChanged(const QString &text)
         profileEdit->clear();
         queryTarget = "USER";
 
-        delBookKey = false;
+        delKey = false;
     }
     else
     {
@@ -534,6 +574,7 @@ void MainWindow::createMenuBox()
     QAction *deleteAction = new QAction(tr("删除书籍"), this);
     QAction *deleteTypeAction = new QAction(tr("删除分区"), this);
     QAction *addUserAction = new QAction(tr("添加用户"), this);
+    QAction *delUserAction = new QAction(tr("删除用户"), this);
     QAction *quitAction = new QAction(tr("退出"), this);
     //借书、还书、添加用户、
 
@@ -542,6 +583,7 @@ void MainWindow::createMenuBox()
     deleteAction->setShortcut(tr("Ctrl+D"));
     deleteTypeAction->setShortcut(tr("Ctrl+Shift+D"));
     addUserAction->setShortcut(tr("Ctrl+U"));
+    delUserAction->setShortcut(tr("Ctrl+Shift+U"));
     quitAction->setShortcut(tr("Ctrl+Q"));
 
     QMenu *fileMenu = menuBar()->addMenu(tr("操作菜单"));
@@ -551,6 +593,7 @@ void MainWindow::createMenuBox()
     fileMenu->addAction(deleteTypeAction);
     fileMenu->addSeparator();
     fileMenu->addAction(addUserAction);
+    fileMenu->addAction(delUserAction);
     fileMenu->addSeparator();
     fileMenu->addAction(quitAction);
 
@@ -559,6 +602,7 @@ void MainWindow::createMenuBox()
     connect(deleteAction, SIGNAL(triggered(bool)), this, SLOT(delBook()));
     connect(deleteTypeAction, SIGNAL(triggered(bool)), this, SLOT(delType()));
     connect(addUserAction, SIGNAL(triggered(bool)), this, SLOT(addUser()));
+    connect(delUserAction, SIGNAL(triggered(bool)), this, SLOT(delUser()));
     connect(quitAction, SIGNAL(triggered(bool)), this, SLOT(close()));
 }
 

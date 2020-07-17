@@ -37,6 +37,7 @@ private:
     QModelIndex indexOfType(const QString &type);
 
     void removeBookFromDatabase(QModelIndex index, QString name);
+    void removeUserFromDatabase(QModelIndex index, QString name);
     void decreaseBookCount(QModelIndex index, QString type);
 
     int generateBookId();
@@ -73,7 +74,7 @@ private:
 
     Server *server;
 
-    bool delBookKey = true;
+    bool delKey = true;
 
 private slots:
     void updateServer(QString);
@@ -91,6 +92,7 @@ private slots:
     void delBook();
     void delType();
     void addUser();
+    void delUser();
 
 signals:
     void response_mainpage(QString);
